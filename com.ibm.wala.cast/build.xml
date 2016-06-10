@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   =======================================================================
-    CAPA Domo build file
+    WALA CAst build file
   =======================================================================
 -->
 <project name="com.ibm.wala.cast" default="getJars" basedir=".">
@@ -18,7 +18,6 @@
 	<property name="javacFailOnError" value="true" />
 	<property name="javacDebugInfo" value="on" />
 	<property name="javacVerbose" value="false" />
-
 
 	<!-- Set global properties for this build -->
 	<property name="src" value="source/java" />
@@ -60,7 +59,7 @@
   <target name="fetchCommonsIo" depends="CommonsIoPresent" unless="commons.io.present">
     <delete dir="${temp.folder}"/>
     <mkdir dir="${temp.folder}"/>
-    <get src="http://apache.petsads.us/commons/io/binaries/commons-io-2.4-bin.zip" dest="${temp.folder}/commons-io-2.4.zip"/>
+	<get src="http://apache.openmirror.de//commons/io/binaries/commons-io-2.4-bin.zip" dest="${temp.folder}/commons-io-2.4.zip"/>
     <unzip src="${temp.folder}/commons-io-2.4.zip" dest="${temp.folder}"/>
     <copy file="${temp.folder}/commons-io-2.4/commons-io-2.4.jar" tofile="${plugin.destination}/lib/commons-io-2.4.jar" />
     <delete dir="${temp.folder}"/>

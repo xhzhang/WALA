@@ -42,10 +42,10 @@ package com.ibm.wala.dalvik.util.androidEntryPoints;
 
 import java.util.List;
 
+import com.ibm.wala.dalvik.ipa.callgraph.impl.AndroidEntryPoint;
+import com.ibm.wala.dalvik.ipa.callgraph.impl.AndroidEntryPoint.ExecutionOrder;
 import com.ibm.wala.dalvik.util.AndroidComponent;
 import com.ibm.wala.dalvik.util.AndroidEntryPointLocator.AndroidPossibleEntryPoint;
-import com.ibm.wala.dalvik.ipa.callgraph.impl.AndroidEntryPoint.ExecutionOrder;
-import com.ibm.wala.dalvik.ipa.callgraph.impl.AndroidEntryPoint;
 
 /**
  *  Hardcoded EntryPoint-specifications for an Android-Activity.
@@ -946,6 +946,17 @@ public final class ActivityEP {
                 }
             ));
 
+    public static final AndroidPossibleEntryPoint onSharedPreferenceChanged = new AndroidPossibleEntryPoint(AndroidComponent.ACTIVITY,
+            "onSharedPreferenceChanged",
+            ExecutionOrder.between( // TODO: Find a nice position
+                new AndroidEntryPoint.IExecutionOrder[] {
+                    onStop
+                },
+                new AndroidEntryPoint.IExecutionOrder[] {
+                    onRestart
+                }
+            ));
+
     /**
      * This method is called before pausing 
      */
@@ -1123,6 +1134,7 @@ public final class ActivityEP {
         possibleEntryPoints.add(onUserLeaveHint);
         possibleEntryPoints.add(onWindowAttributesChanged);
         possibleEntryPoints.add(onWindowFocusChanged);
+        possibleEntryPoints.add(onSharedPreferenceChanged);
 
 	}
 }

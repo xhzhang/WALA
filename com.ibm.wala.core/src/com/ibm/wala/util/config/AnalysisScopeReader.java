@@ -54,7 +54,7 @@ public class AnalysisScopeReader {
   }
 
 
-  protected static AnalysisScope read(AnalysisScope scope, String scopeFileName, File exclusionsFile, ClassLoader javaLoader,
+  public static AnalysisScope read(AnalysisScope scope, String scopeFileName, File exclusionsFile, ClassLoader javaLoader,
       FileProvider fp) throws IOException {
     BufferedReader r = null;
     try {
@@ -71,10 +71,9 @@ public class AnalysisScopeReader {
         r = new BufferedReader(new InputStreamReader(new FileInputStream(scopeFile), "UTF-8"));
       } else {
         // try to read from jar
-        InputStream inFromJar = scope.getClass().getClassLoader().getResourceAsStream(scopeFileName);
+        InputStream inFromJar = javaLoader.getResourceAsStream(scopeFileName);
         if (inFromJar == null) {
-            throw new IllegalArgumentException("Unable to retreive " + scopeFileName + " from the jar using the loader of " + 
-                    scope.getClass());
+            throw new IllegalArgumentException("Unable to retreive " + scopeFileName + " from the jar using " + javaLoader);
         }
         r = new BufferedReader(new InputStreamReader(inFromJar));
       }
@@ -178,7 +177,7 @@ public class AnalysisScopeReader {
     } else if ("stdlib".equals(entryType)) {
       String[] stdlibs = WalaProperties.getJ2SEJarFiles();
       for (int i = 0; i < stdlibs.length; i++) {
-        scope.addToScope(walaLoader, new JarFile(stdlibs[i]));
+        scope.addToScope(walaLoader, new JarFile(stdlibs[i], false));
       }
     } else {
       Assertions.UNREACHABLE();
@@ -223,7 +222,7 @@ public class AnalysisScopeReader {
       while (paths.hasMoreTokens()) {
         String path = paths.nextToken();
         if (path.endsWith(".jar")) {
-          JarFile jar = new JarFile(path);
+          JarFile jar = new JarFile(path, false);
           scope.addToScope(loader, jar);
           try {
             if (jar.getManifest() != null) {

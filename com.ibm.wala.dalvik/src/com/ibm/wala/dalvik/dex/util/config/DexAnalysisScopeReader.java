@@ -48,20 +48,13 @@
 package com.ibm.wala.dalvik.dex.util.config;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.jar.JarFile;
 
-import com.ibm.wala.classLoader.BinaryDirectoryTreeModule;
 import com.ibm.wala.dalvik.classLoader.DexFileModule;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
-import com.ibm.wala.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.util.config.AnalysisScopeReader;
-import com.ibm.wala.util.config.FileOfClasses;
-import com.ibm.wala.util.debug.Assertions;
-import com.ibm.wala.util.io.FileProvider;
 
 /**
  * Create AnalysisScope from java & dalvik file.
@@ -89,10 +82,8 @@ public class DexAnalysisScopeReader extends AnalysisScopeReader {
         
 		ClassLoaderReference loader = scope.getLoader(AnalysisScope.APPLICATION);
 		final String path = classPath.getPath();
-		if (path.endsWith(".jar")) {
-			scope.addToScope(loader, new JarFile(new File(classPath)));
-		} else if (path.endsWith(".apk") || path.endsWith(".dex")) {
-			scope.addToScope(loader, new DexFileModule(new File(classPath)));
+		if (path.endsWith(".jar") || path.endsWith(".apk") || path.endsWith(".dex")) {
+			scope.addToScope(loader, DexFileModule.make(new File(classPath)));
 		} else {
 			throw new IOException(
 					"could not determine type of classpath from file extension: "

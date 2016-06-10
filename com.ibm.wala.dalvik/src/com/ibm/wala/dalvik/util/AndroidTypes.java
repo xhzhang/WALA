@@ -40,9 +40,9 @@
  */
 package com.ibm.wala.dalvik.util;
 
-import com.ibm.wala.types.TypeReference;
-import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.ClassLoaderReference;
+import com.ibm.wala.types.TypeName;
+import com.ibm.wala.types.TypeReference;
 
 /**
  *  Constants for types used by the AndroidModel
@@ -51,7 +51,10 @@ import com.ibm.wala.types.ClassLoaderReference;
  */
 public final class AndroidTypes {
 
-    public static final TypeName IntentName = TypeName.string2TypeName("Landroid/content/Intent");
+    public static final TypeName HandlerName = TypeName.string2TypeName("Landroid/os/Handler");
+    public static final TypeReference Handler = TypeReference.findOrCreate(ClassLoaderReference.Primordial, HandlerName);
+
+	public static final TypeName IntentName = TypeName.string2TypeName("Landroid/content/Intent");
     public static final TypeReference Intent = TypeReference.findOrCreate(ClassLoaderReference.Primordial, IntentName);
     public static final TypeName ApplicationName = TypeName.string2TypeName("Landroid/app/Application");
     public static final TypeReference Application = TypeReference.findOrCreate(ClassLoaderReference.Primordial, ApplicationName);

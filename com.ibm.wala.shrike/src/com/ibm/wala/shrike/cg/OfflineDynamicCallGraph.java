@@ -21,6 +21,7 @@ import java.util.Map;
 import com.ibm.wala.shrikeBT.ConstantInstruction;
 import com.ibm.wala.shrikeBT.Constants;
 import com.ibm.wala.shrikeBT.Disassembler;
+import com.ibm.wala.shrikeBT.IInvokeInstruction;
 import com.ibm.wala.shrikeBT.LoadInstruction;
 import com.ibm.wala.shrikeBT.MethodData;
 import com.ibm.wala.shrikeBT.MethodEditor;
@@ -56,14 +57,13 @@ import com.ibm.wala.util.config.SetOfClasses;
  * @author Julian Dolby (dolby@us.ibm.com)
  * @since 10/18
  */
-public class DynamicCallGraph {
+public class OfflineDynamicCallGraph {
 	private final static boolean disasm = true;
 	private final static boolean verify = true;
 
 	private static boolean patchExits = true;
+	private static boolean patchCalls = false;
 	
-	private static OfflineInstrumenter instrumenter;
-
 	private static Class<?> runtime = Runtime.class;
 	
 	private static SetOfClasses filter;
@@ -71,6 +71,7 @@ public class DynamicCallGraph {
 	private static ClassHierarchyStore cha = new ClassHierarchyStore();
 	
 	public static void main(String[] args) throws IOException, ClassNotFoundException, InvalidClassFileException, FailureException {
+	  OfflineInstrumenter instrumenter;
 	  ClassInstrumenter ci;
 	  Writer w = new BufferedWriter(new FileWriter("report", false));
 
@@ -81,7 +82,9 @@ public class DynamicCallGraph {
 	        filter = new FileOfClasses(new FileInputStream(args[i+1]));
 	      } else if ("--dont-patch-exits".equals(args[i])) {
 	        patchExits = false;
-	      } else if ("--rt-jar".equals(args[i])) {
+	      } else if ("--patch-calls".equals(args[i])) {
+          patchCalls = true;
+        } else if ("--rt-jar".equals(args[i])) {
 	        System.err.println("using " + args[i+1] + " as stdlib");
 	        OfflineInstrumenter libReader = new OfflineInstrumenter(true);
 	        libReader.addInputJar(new File(args[i+1]));
@@ -105,20 +108,26 @@ public class DynamicCallGraph {
 	  
 	  instrumenter.beginTraversal();
 	  while ((ci = instrumenter.nextClass()) != null) {
-	    doClass(ci, w);
+	    ClassWriter cw = doClass(ci, w);
+	    if (cw != null) {
+	      instrumenter.outputModifiedClass(ci, cw);
+	    }
 	  }
 	  
 	  instrumenter.close();
 	}
 
-	private static void doClass(final ClassInstrumenter ci, Writer w) throws InvalidClassFileException, IOException, FailureException {
+	static ClassWriter doClass(final ClassInstrumenter ci, Writer w) throws InvalidClassFileException, IOException, FailureException {
 		final String className = ci.getReader().getName();
     if (filter != null && filter.contains(className)) {
-      return;
+      return null;
     }
-		w.write("Class: " + className + "\n");
-		w.flush();
-
+    
+    if (disasm) {
+      w.write("Class: " + className + "\n");
+      w.flush();
+    }
+    
 		final ClassReader r = ci.getReader();
 		
 		for (int m = 0; m < ci.getReader().getMethodCount(); m++) {
@@ -127,13 +136,11 @@ public class DynamicCallGraph {
 			// d could be null, e.g., if the method is abstract or native
 			if (d != null) {
 		    if (filter != null && filter.contains(className + "." + ci.getReader().getMethodName(m))) {
-		      return;
+		      return null;
 		    }
 
-				w.write("Instrumenting " + ci.getReader().getMethodName(m) + " " + ci.getReader().getMethodType(m) + ":\n");
-				w.flush();
-
 				if (disasm) {
+	        w.write("Instrumenting " + ci.getReader().getMethodName(m) + " " + ci.getReader().getMethodType(m) + ":\n");
 					w.write("Initial ShrikeBT code:\n");
 					(new Disassembler(d)).disassembleTo(w);
 					w.flush();
@@ -147,12 +154,12 @@ public class DynamicCallGraph {
 
 				final MethodEditor me = new MethodEditor(d);
 				me.beginPass();
-				
+			
 				final String theClass = r.getName();
 				final String theMethod = r.getMethodName(m).concat(r.getMethodType(m));
 				final boolean isConstructor = theMethod.contains("<init>");
 				final boolean nonStatic = !java.lang.reflect.Modifier.isStatic(r.getMethodAccessFlags(m));
-	
+
 				me.insertAtStart(new MethodEditor.Patch() {
 				  @Override
           public void emitTo(MethodEditor.Output w) {
@@ -163,7 +170,7 @@ public class DynamicCallGraph {
 				    else
               w.emit(Util.makeGet(runtime, "NULL_TAG"));
 				      // w.emit(ConstantInstruction.make(Constants.TYPE_null, null));
-				    w.emit(Util.makeInvoke(runtime, "execution", new Class[] {Class.class, String.class, Object.class}));
+				    w.emit(Util.makeInvoke(runtime, "execution", new Class[] {String.class, String.class, Object.class}));
 				  }
 				});
 
@@ -205,6 +212,45 @@ public class DynamicCallGraph {
 				  });
 				}
 
+				if (patchCalls) {
+				  me.visitInstructions(new MethodEditor.Visitor() {
+
+				    @Override
+				    public void visitInvoke(IInvokeInstruction inv) {
+				      final String calleeClass = inv.getClassType();
+				      final String calleeMethod = inv.getMethodName() + inv.getMethodSignature();
+				      addInstructionExceptionHandler(/*"java.lang.Throwable"*/null, new MethodEditor.Patch() {
+				        @Override
+				        public void emitTo(MethodEditor.Output w) {
+				          w.emit(ConstantInstruction.makeString(calleeClass));
+				          w.emit(ConstantInstruction.makeString(calleeMethod));
+				          w.emit(Util.makeInvoke(runtime, "pop", new Class[] {String.class, String.class}));
+				          w.emit(ThrowInstruction.make(true));
+				        }
+				      });
+				      insertBefore(new MethodEditor.Patch() {
+				        @Override
+				        public void emitTo(MethodEditor.Output w) {
+				          w.emit(ConstantInstruction.makeString(calleeClass));
+				          w.emit(ConstantInstruction.makeString(calleeMethod));
+				          // target unknown
+				          w.emit(Util.makeGet(runtime, "NULL_TAG"));
+				          // w.emit(ConstantInstruction.make(Constants.TYPE_null, null));
+				          w.emit(Util.makeInvoke(runtime, "addToCallStack", new Class[] {String.class, String.class, Object.class}));
+				        }
+				      });
+				      insertAfter(new MethodEditor.Patch() {
+				        @Override
+				        public void emitTo(MethodEditor.Output w) {
+				          w.emit(ConstantInstruction.makeString(calleeClass));
+				          w.emit(ConstantInstruction.makeString(calleeMethod));
+				          w.emit(Util.makeInvoke(runtime, "pop", new Class[] {String.class, String.class}));
+				        }
+				      });
+				    }
+				  });
+				}
+				
 				// this updates the data d
 				me.applyPatches();
 
@@ -277,7 +323,10 @@ public class DynamicCallGraph {
         }
 		  };
 			ci.emitClass(cw);
-			instrumenter.outputModifiedClass(ci, cw);
+			return cw;
+		
+		} else {
+		  return null;
 		}
 	}
 

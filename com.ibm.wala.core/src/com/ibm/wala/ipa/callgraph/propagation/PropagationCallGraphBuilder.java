@@ -89,7 +89,7 @@ public abstract class PropagationCallGraphBuilder implements CallGraphBuilder {
   /**
    * Governing class hierarchy
    */
-  final protected IClassHierarchy cha;
+  public final IClassHierarchy cha;
 
   /**
    * Special rules for bypassing Java calls
@@ -120,6 +120,10 @@ public abstract class PropagationCallGraphBuilder implements CallGraphBuilder {
    * The system of constraints used to build this graph
    */
   protected PropagationSystem system;
+
+  public PropagationSystem getSystem() {
+    return system;
+  }
 
   /**
    * Algorithm used to solve the system of constraints
@@ -256,11 +260,8 @@ public abstract class PropagationCallGraphBuilder implements CallGraphBuilder {
     
 /** BEGIN Custom change: throw exception on empty entry points. This is a severe issue that should not go undetected! */
     if (entrypointCallSites.isEmpty()) {
-      throw new IllegalStateException("Could not create a entrypoint callsites."
-          + " This happens when some parameters of the method can not be generated automatically "
-          + "(e.g. when they refer to an interface or an abstract class).");
-    }
-    
+      throw new IllegalStateException("Could not create a entrypoint callsites: " +   Warnings.asString());
+    }  
 /** END Custom change: throw exception on empty entry points. This is a severe issue that should not go undetected! */
     customInit();
 

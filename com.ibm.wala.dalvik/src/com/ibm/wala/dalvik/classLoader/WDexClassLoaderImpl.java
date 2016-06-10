@@ -47,8 +47,6 @@
 
 package com.ibm.wala.dalvik.classLoader;
 
-import static com.ibm.wala.classLoader.ClassLoaderImpl.DEBUG_LEVEL;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -56,8 +54,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.slf4j.LoggerFactory;
 
 import com.ibm.wala.classLoader.ClassLoaderImpl;
 import com.ibm.wala.classLoader.IClass;
@@ -79,8 +75,6 @@ import com.ibm.wala.util.warnings.Warnings;
  *
  */
 public class WDexClassLoaderImpl extends ClassLoaderImpl {
-	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(WDexClassLoaderImpl.class);
-
     private IClassLoader lParent;
 
     private final SetOfClasses exclusions;
@@ -112,7 +106,6 @@ public class WDexClassLoaderImpl extends ClassLoaderImpl {
         
         for (Iterator<Module> it = modules.iterator(); it.hasNext();) {
             Module archive = it.next();
-            logger.debug("add archive: : "+archive);
             Set<ModuleEntry> classFiles = getDexFiles(archive);
             
             removeClassFiles(classFiles, classModuleEntries);
@@ -153,7 +146,7 @@ public class WDexClassLoaderImpl extends ClassLoaderImpl {
     		ModuleEntry entry = (ModuleEntry) it.next();
     		if (entry instanceof DexModuleEntry) {    		
     			result.add(entry);
-    		}
+    		} 
     	}
     	return result;
     }
@@ -201,7 +194,6 @@ public class WDexClassLoaderImpl extends ClassLoaderImpl {
     						continue;
     					}
  
-    					logger.debug("Load class: " + className);
     					loadedClasses.put(tName, iClass);
     				} else {
     					Warnings.add(InvalidDexFile.create(className));

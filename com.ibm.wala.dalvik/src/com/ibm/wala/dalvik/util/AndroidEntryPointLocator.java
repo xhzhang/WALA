@@ -352,10 +352,7 @@ nextMethod:
                     final Collection<IMethod> ifMethods = iFace.getDeclaredMethods();
                     for (final IMethod ifMethod : ifMethods) {
                         final IMethod method = appClass.getMethod(ifMethod.getSelector());
-                        if (method == null || method.isAbstract()) {
-                        	continue;
-                        }
-                        if (method.getDeclaringClass().getClassLoader().getReference().equals(ClassLoaderReference.Application)) {
+                        if (method != null && method.getDeclaringClass().getClassLoader().getReference().equals(ClassLoaderReference.Application)) {
                             // The function is overridden
                             final AndroidEntryPoint ep = new AndroidEntryPoint(selectPositionForHeuristic(method), method, cha);
 
@@ -414,9 +411,12 @@ nextMethod:
 
     private boolean isExcluded(final IClass cls) {
     	final SetOfClasses set = cls.getClassHierarchy().getScope().getExclusions();
-    	final String clsName = cls.getReference().getName().toString().substring(1);
-    	
-        return set.contains(clsName);
+    	if (set == null) {
+    		return false; // exclusions null ==> no exclusions ==> no class is excluded
+    	} else {
+    		final String clsName = cls.getReference().getName().toString().substring(1);
+    		return set.contains(clsName);
+    	}
     }
 
     /**
@@ -473,7 +473,10 @@ nextMethod:
      */
     private void populatePossibleEntryPoints() {
         // Populate the list of possible EntryPoints
-
+    	if (possibleEntryPoints.size() > 0) {
+    		// already populated
+    		return;
+    	}
         ApplicationEP.populate(possibleEntryPoints);
 		ActivityEP.populate(possibleEntryPoints);
 		ServiceEP.populate(possibleEntryPoints);

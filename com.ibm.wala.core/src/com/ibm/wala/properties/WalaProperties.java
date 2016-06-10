@@ -37,7 +37,9 @@ public final class WalaProperties {
 
   public final static String ECLIPSE_PLUGINS_DIR = "eclipse_plugins_dir"; //$NON-NLS-1$
 
-  public final static String ANDROID_RT_JAR = "android_rt_jar";
+  public final static String ANDROID_RT_DEX_DIR = "android_rt_dir";
+
+  public final static String ANDROID_RT_JAVA_JAR = "android_rt_jar";
 
   public final static String ANDROID_DEX_TOOL = "android_dx_tool";
 
@@ -57,7 +59,10 @@ public final class WalaProperties {
     }
 
     String dir = p.getProperty(WalaProperties.J2SE_DIR);
-    Assertions.productionAssertion(dir != null);
+    if (dir == null || !(new File(dir)).isDirectory()) {
+      System.err.println("WARNING: java_runtime_dir " + dir + " in wala.properties is invalid.  Using boot class path instead.");
+      return PlatformUtil.getBootClassPathJars();      
+    }
     return getJarsInDirectory(dir);
   }
 

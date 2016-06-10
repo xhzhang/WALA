@@ -3,13 +3,13 @@ href="http://wala.sourceforge.net">the WALA home page</a>.
 
 
 =========
-** How to merge from upstream WALA:
+#### How to merge from upstream WALA:
 
-* 1. git fetch upstream
+##### 1. git fetch upstream
 
-* 2. git merge upstream/master
+##### 2. git merge upstream/master
 
-* 3. resolve conflicts (rm unwanted directories/files, handle changes in existing files)
+##### 3. resolve conflicts (rm unwanted directories/files, handle changes in existing files)
 
-* 4. git push origin
+##### 4. git push origin
 

@@ -86,7 +86,6 @@ public class DexFileModule implements Module {
     	}
     	File tf = new File(System.getProperty("java.io.tmpdir") + "/" + name + "_classes.dex");
     	tf.deleteOnExit();
-    	System.err.println("using " + tf);
     	return tf;
     }
     

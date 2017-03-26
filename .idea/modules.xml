@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/WALA.iml" filepath="$PROJECT_DIR$/WALA.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.cast/com.ibm.wala.cast.iml" filepath="$PROJECT_DIR$/com.ibm.wala.cast/com.ibm.wala.cast.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.core/com.ibm.wala.core.iml" filepath="$PROJECT_DIR$/com.ibm.wala.core/com.ibm.wala.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.core.tests/com.ibm.wala.core.tests.iml" filepath="$PROJECT_DIR$/com.ibm.wala.core.tests/com.ibm.wala.core.tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.dalvik/com.ibm.wala.dalvik.iml" filepath="$PROJECT_DIR$/com.ibm.wala.dalvik/com.ibm.wala.dalvik.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.dalvik.test/com.ibm.wala.dalvik.test.iml" filepath="$PROJECT_DIR$/com.ibm.wala.dalvik.test/com.ibm.wala.dalvik.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.shrike/com.ibm.wala.shrike.iml" filepath="$PROJECT_DIR$/com.ibm.wala.shrike/com.ibm.wala.shrike.iml" />
+      <module fileurl="file://$PROJECT_DIR$/com.ibm.wala.util/com.ibm.wala.util.iml" filepath="$PROJECT_DIR$/com.ibm.wala.util/com.ibm.wala.util.iml" />
+    </modules>
+  </component>
+</project>
